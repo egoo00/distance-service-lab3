@@ -34,9 +34,9 @@ public class GeocodingService {
         String url = String.format("%s?q=%s&key=%s", apiUrl, cityName, apiKey);
         ResponseEntity<com.example.distanceservice.dto.GeocodingResponse> response = restTemplate.getForEntity(url, com.example.distanceservice.dto.GeocodingResponse.class);
 
-// Исправлено: Вместо выброса исключения возвращаем null, так как обработка ошибок не требуется
+
         if (response.getBody() == null || response.getBody().getResults() == null || response.getBody().getResults().isEmpty()) {
-// throw new CityNotFoundException("City not found: " + cityName);
+
             return null;
         }
 
