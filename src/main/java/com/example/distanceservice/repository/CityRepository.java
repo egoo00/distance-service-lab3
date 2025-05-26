@@ -17,5 +17,5 @@ public interface CityRepository extends JpaRepository<City, Long> {
     @Query(value = "SELECT * FROM city c JOIN country co ON c.country_id = co.id WHERE co.name = ?1", nativeQuery = true)
     List<City> findCitiesByCountryNameNative(String countryName);
 
-    Optional<City> findByName(String name); // Добавленный метод
+    Optional<City> findByName(String name); 
 }
