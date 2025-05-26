@@ -20,18 +20,18 @@ public class DistanceService {
         City c1 = cityRepository.findByName(city1).orElse(null);
         if (c1 == null) {
             c1 = geocodingService.getCity(city1);
-            // Добавлено: Проверка на null после вызова geocodingService
+            
             if (c1 == null) {
-                return new DistanceResponse(city1, city2, -1, "km"); // Возвращаем заглушку, так как обработка ошибок не требуется
+                return new DistanceResponse(city1, city2, -1, "km"); 
             }
         }
 
         City c2 = cityRepository.findByName(city2).orElse(null);
         if (c2 == null) {
             c2 = geocodingService.getCity(city2);
-            // Добавлено: Проверка на null после вызова geocodingService
+            
             if (c2 == null) {
-                return new DistanceResponse(city1, city2, -1, "km"); // Возвращаем заглушку, так как обработка ошибок не требуется
+                return new DistanceResponse(city1, city2, -1, "km"); 
             }
         }
 
