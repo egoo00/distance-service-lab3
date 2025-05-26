@@ -8,7 +8,7 @@ public class Geometry {
     @JsonProperty("lng")
     private double lng;
 
-    // Геттеры и сеттеры
+  
     public double getLat() {
         return lat;
     }
