@@ -19,22 +19,39 @@ public class CountryService {
     }
 
     public List<Country> getAllCountries() {
-        return countryRepository.findAll();
+        List<Country> cachedCountries = (List<Country>) simpleCache.get("countries_all");
+        if (cachedCountries != null) {
+            return cachedCountries;
+        }
+        List<Country> countries = countryRepository.findAll();
+        simpleCache.put("countries_all", countries);
+        return countries;
     }
 
     public Optional<Country> getCountryById(Long id) {
-        return countryRepository.findById(id);
+        String cacheKey = "country_" + id;
+        Optional<Country> cachedCountry = Optional.ofNullable((Country) simpleCache.get(cacheKey));
+        if (cachedCountry.isPresent()) {
+            return cachedCountry;
+        }
+        Optional<Country> country = countryRepository.findById(id);
+        country.ifPresent(c -> simpleCache.put(cacheKey, c));
+        return country;
     }
 
     public Country saveCountry(Country country) {
         Country savedCountry = countryRepository.save(country);
-        simpleCache.put("countries_all", countryRepository.findAll());
+        List<Country> updatedCountries = countryRepository.findAll();
+        simpleCache.put("countries_all", updatedCountries);
+        simpleCache.put("country_" + savedCountry.getId(), savedCountry);
         return savedCountry;
     }
 
     public void deleteCountry(Long id) {
         countryRepository.deleteById(id);
-        simpleCache.put("countries_all", countryRepository.findAll());
+        List<Country> updatedCountries = countryRepository.findAll();
+        simpleCache.put("countries_all", updatedCountries);
+        simpleCache.put("country_" + id, null);
     }
 
     public Country updateCountry(Long id, Country updatedCountry) {
@@ -42,7 +59,9 @@ public class CountryService {
             country.setName(updatedCountry.getName());
             return countryRepository.save(country);
         }).orElseThrow(() -> new RuntimeException("Country not found with id: " + id));
-        simpleCache.put("countries_all", countryRepository.findAll());
+        List<Country> updatedCountries = countryRepository.findAll();
+        simpleCache.put("countries_all", updatedCountries);
+        simpleCache.put("country_" + id, updated);
         return updated;
     }
 }
