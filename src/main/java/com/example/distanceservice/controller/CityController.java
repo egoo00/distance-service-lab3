@@ -2,10 +2,10 @@ package com.example.distanceservice.controller;
 
 import com.example.distanceservice.entity.City;
 import com.example.distanceservice.service.CityService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/cities")
@@ -22,17 +22,29 @@ public class CityController {
     }
 
     @GetMapping("/{id}")
-    public Optional<City> getCityById(@PathVariable Long id) {
-        return cityService.getCityById(id);
+    public ResponseEntity<City> getCityById(@PathVariable Long id) {
+        return cityService.getCityById(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public City saveCity(@RequestBody City city) {
+    public City createCity(@RequestBody City city) {
         return cityService.saveCity(city);
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<City> updateCity(@PathVariable Long id, @RequestBody City city) {
+        try {
+            return ResponseEntity.ok(cityService.updateCity(id, city));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @DeleteMapping("/{id}")
-    public void deleteCity(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteCity(@PathVariable Long id) {
         cityService.deleteCity(id);
+        return ResponseEntity.ok().build();
     }
 }
