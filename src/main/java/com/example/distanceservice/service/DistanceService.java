@@ -22,7 +22,6 @@ public class DistanceService {
     public DistanceResponse calculateDistance(String city1, String city2) {
         String cacheKey = "distance_" + city1 + "_" + city2;
         DistanceResponse cachedResponse = (DistanceResponse) simpleCache.get(cacheKey);
-
         if (cachedResponse != null) {
             return cachedResponse;
         }
