@@ -30,4 +30,11 @@ public class CountryService {
     public void deleteCountry(Long id) {
         countryRepository.deleteById(id);
     }
+
+    public Country updateCountry(Long id, Country updatedCountry) {
+        return countryRepository.findById(id).map(country -> {
+            country.setName(updatedCountry.getName());
+            return countryRepository.save(country);
+        }).orElseThrow(() -> new RuntimeException("Country not found with id: " + id));
+    }
 }
