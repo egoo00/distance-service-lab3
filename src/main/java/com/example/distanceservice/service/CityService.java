@@ -19,22 +19,39 @@ public class CityService {
     }
 
     public List<City> getAllCities() {
-        return cityRepository.findAll();
+        List<City> cachedCities = (List<City>) simpleCache.get("cities_all");
+        if (cachedCities != null) {
+            return cachedCities;
+        }
+        List<City> cities = cityRepository.findAll();
+        simpleCache.put("cities_all", cities);
+        return cities;
     }
 
     public Optional<City> getCityById(Long id) {
-        return cityRepository.findById(id);
+        String cacheKey = "city_" + id;
+        Optional<City> cachedCity = Optional.ofNullable((City) simpleCache.get(cacheKey));
+        if (cachedCity.isPresent()) {
+            return cachedCity;
+        }
+        Optional<City> city = cityRepository.findById(id);
+        city.ifPresent(c -> simpleCache.put(cacheKey, c));
+        return city;
     }
 
     public City saveCity(City city) {
         City savedCity = cityRepository.save(city);
-        simpleCache.put("cities_all", cityRepository.findAll());
+        List<City> updatedCities = cityRepository.findAll();
+        simpleCache.put("cities_all", updatedCities);
+        simpleCache.put("city_" + savedCity.getId(), savedCity);
         return savedCity;
     }
 
     public void deleteCity(Long id) {
         cityRepository.deleteById(id);
-        simpleCache.put("cities_all", cityRepository.findAll());
+        List<City> updatedCities = cityRepository.findAll();
+        simpleCache.put("cities_all", updatedCities);
+        simpleCache.put("city_" + id, null);
     }
 
     public City updateCity(Long id, City updatedCity) {
@@ -44,7 +61,9 @@ public class CityService {
             city.setLongitude(updatedCity.getLongitude());
             return cityRepository.save(city);
         }).orElseThrow(() -> new RuntimeException("City not found with id: " + id));
-        simpleCache.put("cities_all", cityRepository.findAll());
+        List<City> updatedCities = cityRepository.findAll();
+        simpleCache.put("cities_all", updatedCities);
+        simpleCache.put("city_" + id, updated);
         return updated;
     }
 }
