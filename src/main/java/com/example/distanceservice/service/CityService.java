@@ -30,4 +30,13 @@ public class CityService {
     public void deleteCity(Long id) {
         cityRepository.deleteById(id);
     }
+
+    public City updateCity(Long id, City updatedCity) {
+        return cityRepository.findById(id).map(city -> {
+            city.setName(updatedCity.getName());
+            city.setLatitude(updatedCity.getLatitude());
+            city.setLongitude(updatedCity.getLongitude());
+            return cityRepository.save(city);
+        }).orElseThrow(() -> new RuntimeException("City not found with id: " + id));
+    }
 }
