@@ -19,22 +19,39 @@ public class TouristService {
     }
 
     public List<Tourist> getAllTourists() {
-        return touristRepository.findAll();
+        List<Tourist> cachedTourists = (List<Tourist>) simpleCache.get("tourists_all");
+        if (cachedTourists != null) {
+            return cachedTourists;
+        }
+        List<Tourist> tourists = touristRepository.findAll();
+        simpleCache.put("tourists_all", tourists);
+        return tourists;
     }
 
     public Optional<Tourist> getTouristById(Long id) {
-        return touristRepository.findById(id);
+        String cacheKey = "tourist_" + id;
+        Optional<Tourist> cachedTourist = Optional.ofNullable((Tourist) simpleCache.get(cacheKey));
+        if (cachedTourist.isPresent()) {
+            return cachedTourist;
+        }
+        Optional<Tourist> tourist = touristRepository.findById(id);
+        tourist.ifPresent(t -> simpleCache.put(cacheKey, t));
+        return tourist;
     }
 
     public Tourist saveTourist(Tourist tourist) {
         Tourist savedTourist = touristRepository.save(tourist);
-        simpleCache.put("tourists_all", touristRepository.findAll());
+        List<Tourist> updatedTourists = touristRepository.findAll();
+        simpleCache.put("tourists_all", updatedTourists);
+        simpleCache.put("tourist_" + savedTourist.getId(), savedTourist);
         return savedTourist;
     }
 
     public void deleteTourist(Long id) {
         touristRepository.deleteById(id);
-        simpleCache.put("tourists_all", touristRepository.findAll());
+        List<Tourist> updatedTourists = touristRepository.findAll();
+        simpleCache.put("tourists_all", updatedTourists);
+        simpleCache.put("tourist_" + id, null);
     }
 
     public Tourist updateTourist(Long id, Tourist updatedTourist) {
@@ -43,7 +60,9 @@ public class TouristService {
             tourist.setVisitedCities(updatedTourist.getVisitedCities());
             return touristRepository.save(tourist);
         }).orElseThrow(() -> new RuntimeException("Tourist not found with id: " + id));
-        simpleCache.put("tourists_all", touristRepository.findAll());
+        List<Tourist> updatedTourists = touristRepository.findAll();
+        simpleCache.put("tourists_all", updatedTourists);
+        simpleCache.put("tourist_" + id, updated);
         return updated;
     }
 }
