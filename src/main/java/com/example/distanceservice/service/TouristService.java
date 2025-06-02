@@ -30,4 +30,12 @@ public class TouristService {
     public void deleteTourist(Long id) {
         touristRepository.deleteById(id);
     }
+
+    public Tourist updateTourist(Long id, Tourist updatedTourist) {
+        return touristRepository.findById(id).map(tourist -> {
+            tourist.setName(updatedTourist.getName());
+            tourist.setVisitedCities(updatedTourist.getVisitedCities());
+            return touristRepository.save(tourist);
+        }).orElseThrow(() -> new RuntimeException("Tourist not found with id: " + id));
+    }
 }
